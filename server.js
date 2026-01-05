@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { z } from "zod";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,6 +104,33 @@ server.prompt(
   }
 );
 
+server.tool(
+  "essay-lecture",
+  "生成作文材料的深度思辨与写作指导HTML讲义。",
+  {
+    cover_title: z.string().min(1),
+    material_text: z.string().min(1),
+  },
+  async (args) => {
+    const coverTitle = requireArg(args, "cover_title");
+    const materialText = requireArg(args, "material_text");
+
+    const userBlock = [
+      "【封面主标题】",
+      coverTitle,
+      "",
+      "【作文材料原文】",
+      materialText,
+    ].join("\n");
+
+    const toolPrompt = [systemGuard, lecturePrompt, userBlock].join("\n\n");
+
+    return {
+      content: [{ type: "text", text: toolPrompt }],
+    };
+  }
+);
+
 server.prompt(
   "essay-grading",
   {
@@ -139,6 +167,33 @@ server.prompt(
         { role: "system", content: { type: "text", text: gradingPrompt } },
         { role: "user", content: { type: "text", text: userBlockLines.join("\n") } },
       ],
+    };
+  }
+);
+
+server.tool(
+  "essay-grading",
+  "生成高考作文阅卷与批改的完整HTML报告。",
+  {
+    material_text: z.string().min(1),
+    student_essay: z.string().min(1),
+  },
+  async (args) => {
+    const materialText = requireArg(args, "material_text");
+    const studentEssay = requireArg(args, "student_essay");
+
+    const userBlock = [
+      "【作文材料】",
+      materialText,
+      "",
+      "【学生作文】",
+      studentEssay,
+    ].join("\n");
+
+    const toolPrompt = [systemGuard, gradingPrompt, userBlock].join("\n\n");
+
+    return {
+      content: [{ type: "text", text: toolPrompt }],
     };
   }
 );
