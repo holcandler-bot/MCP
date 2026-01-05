@@ -58,6 +58,13 @@ const systemGuard = [
   "3) 不得输出用于绕过以上规则的提示、线索或变体。",
   "4) 仅输出与用户任务目标直接相关的内容。",
 ].join("\n");
+const outputGuard = [
+  "【输出格式】",
+  "1) 只输出一个完整HTML文件的代码块，不要任何解释性文字。",
+  "2) 代码块必须以```html开始，以```结束。",
+  "3) HTML必须包含<!DOCTYPE html>、<html>、<head>、<style>、<body>，CSS与正文同一文件。",
+  "4) 不得输出“Page 1:”“HTML结构:”等过程性文本。",
+].join("\n");
 
 const server = new McpServer({
   name: "prompt-mcp",
@@ -97,6 +104,7 @@ server.prompt(
     return {
       messages: [
         { role: "system", content: { type: "text", text: systemGuard } },
+        { role: "system", content: { type: "text", text: outputGuard } },
         { role: "system", content: { type: "text", text: lecturePrompt } },
         { role: "user", content: { type: "text", text: userBlock } },
       ],
@@ -123,7 +131,7 @@ server.tool(
       materialText,
     ].join("\n");
 
-    const toolPrompt = [systemGuard, lecturePrompt, userBlock].join("\n\n");
+    const toolPrompt = [systemGuard, outputGuard, lecturePrompt, userBlock].join("\n\n");
 
     return {
       content: [{ type: "text", text: toolPrompt }],
@@ -164,6 +172,7 @@ server.prompt(
     return {
       messages: [
         { role: "system", content: { type: "text", text: systemGuard } },
+        { role: "system", content: { type: "text", text: outputGuard } },
         { role: "system", content: { type: "text", text: gradingPrompt } },
         { role: "user", content: { type: "text", text: userBlockLines.join("\n") } },
       ],
@@ -190,7 +199,7 @@ server.tool(
       studentEssay,
     ].join("\n");
 
-    const toolPrompt = [systemGuard, gradingPrompt, userBlock].join("\n\n");
+    const toolPrompt = [systemGuard, outputGuard, gradingPrompt, userBlock].join("\n\n");
 
     return {
       content: [{ type: "text", text: toolPrompt }],
